@@ -1,0 +1,10 @@
+# Ignore all the files in directory
+games/**
+
+# ignore specific files
+*.*~
+*~
+*.dll
+*.exe
+*.o
+oldchip8.*
