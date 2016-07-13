@@ -19,6 +19,10 @@ class Chip8 {
 		unsigned char sound_timer;
 
 		void (Chip8::*ops[0x10])(unsigned short);
+		void (Chip8::*ops00[0x100])(unsigned short);
+		void (Chip8::*ops8XY[0x10])(unsigned short);
+		void (Chip8::*opsEX[0x100])(unsigned short);
+		void (Chip8::*opsFX[0x100])(unsigned short);
 
 		void doNothing(unsigned short opcode);
 		void setOps();
@@ -41,6 +45,32 @@ class Chip8 {
 		void ocD000(unsigned short opcode);
 		void ocE000(unsigned short opcode);
 		void ocF000(unsigned short opcode);
+
+		void oc00E0(unsigned short opcode);
+		void oc00EE(unsigned short opcode);
+
+		void oc8XY0(unsigned short opcode);
+		void oc8XY1(unsigned short opcode);
+		void oc8XY2(unsigned short opcode);
+		void oc8XY3(unsigned short opcode);
+		void oc8XY4(unsigned short opcode);
+		void oc8XY5(unsigned short opcode);
+		void oc8XY6(unsigned short opcode);
+		void oc8XY7(unsigned short opcode);
+		void oc8XYE(unsigned short opcode);
+
+		void ocEX9E(unsigned short opcode);
+		void ocEXA1(unsigned short opcode);
+
+		void ocFX07(unsigned short opcode);
+		void ocFX0A(unsigned short opcode);
+		void ocFX15(unsigned short opcode);
+		void ocFX18(unsigned short opcode);
+		void ocFX1E(unsigned short opcode);
+		void ocFX29(unsigned short opcode);
+		void ocFX33(unsigned short opcode);
+		void ocFX55(unsigned short opcode);
+		void ocFX65(unsigned short opcode);
 	public:
 		Chip8();
 		~Chip8();

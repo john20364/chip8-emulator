@@ -2,6 +2,7 @@
 games/**
 
 # ignore specific files
+*.swp
 *.*~
 *~
 *.dll
