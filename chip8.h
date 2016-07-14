@@ -1,19 +1,24 @@
 #ifndef __CHIP8_H__
 #define __CHIP8_H__
+#include <map>
+#include <SDL2/SDL.h>
+
 class Chip8 {
 	private:
-		unsigned char memory[4096];	// 4K memory
-		unsigned char V[16];		// General purpose registers
+		Uint64 startCount;			  // SDL_GetPerformanceCounter
+		Uint64 currentCount;		  // SDL_GetPerformanceCounter
+		unsigned char memory[4096];	  // 4K memory
+		unsigned char V[16];		  // General purpose registers
 		
-		unsigned short opcode;		// Operation code
-		unsigned short I;			// Index register
-		unsigned short pc;			// Program counter
-		unsigned short stack[16];	// 16 levels of stack
-		unsigned short sp;			// Stack pointer
-		bool drawFlag;				// Set to true when time to draw
+		unsigned short opcode;		  // Operation code
+		unsigned short I;			  // Index register
+		unsigned short pc;			  // Program counter
+		unsigned short stack[16];	  // 16 levels of stack
+		unsigned short sp;			  // Stack pointer
+		bool drawFlag;				  // Set to true when time to draw
 
-		unsigned char keystate[16];	// Keystate for HEX keys
-		unsigned char gfx[64*32];	// Graphics 64 x 32 pixels
+		unsigned char keystate[16];	  // Keystate for HEX keys
+		std::map<Uint32, int> keymap; // keyboard mapping
 
 		unsigned char delay_timer;
 		unsigned char sound_timer;
@@ -72,9 +77,13 @@ class Chip8 {
 		void ocFX55(unsigned short opcode);
 		void ocFX65(unsigned short opcode);
 	public:
+		unsigned char gfx[64*32];	// Graphics 64 x 32 pixels
 		Chip8();
 		~Chip8();
+		void setKeystate(Uint32 sdl_keycode, unsigned char state);
+		bool timeToDraw();
 		void emulateCycle();
+		void loadGame(std::string title);
 	public:
 };
 #endif
