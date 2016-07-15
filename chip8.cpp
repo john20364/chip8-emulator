@@ -65,9 +65,10 @@ void Chip8::loadGame(string title) {
 }
 
 void Chip8::emulateCycle() {
+	static int tick=0;
 	currentCount = SDL_GetPerformanceCounter();
 	double result = currentCount - startCount;
-	result *= 600;
+	result *= 600; // 600 Hz
 	result /= SDL_GetPerformanceFrequency();
 
 	if (result < 1.0) return;
@@ -77,13 +78,16 @@ void Chip8::emulateCycle() {
 	opcode = memory[pc] << 8 | memory[pc + 1];
 	(this->*ops[(opcode & 0xF000) >> 12])(opcode);
 
-	if (delay_timer > 0)
-		delay_timer--;
-
-	if (sound_timer > 0) {
-		if (sound_timer == 1)
-			cout << "Beep" << endl;
-		sound_timer--;
+	++tick %= 10; // 60 Hz
+	if (tick == 0) {
+		if (delay_timer > 0)
+			delay_timer--;
+	
+		if (sound_timer > 0) {
+			if (sound_timer == 1)
+				cout << "Beep" << endl;
+			sound_timer--;
+		}
 	}
 }
 
@@ -380,13 +384,13 @@ void Chip8::ocA000(unsigned short opcode) {
 
 // BNNN - Jumps to the address NNN plus V0.
 void Chip8::ocB000(unsigned short opcode) {
-	pc = (opcode & 0x0FFF) + V[0];
+	pc = (opcode & 0x0FFF) + V[0x0];
 }
 
 // CXNN - Sets VX to the result of a bitwise AND operation on a 
 // random number and NN.
 void Chip8::ocC000(unsigned short opcode) {
-//	V[X(opcode)] = (rand() % 0x100) & (opcode & 0x00FF);
+	V[X(opcode)] = (rand() % 0x100) & (opcode & 0x00FF);
 	pc += 2;
 }
 
@@ -398,11 +402,11 @@ void Chip8::ocC000(unsigned short opcode) {
 // from set to unset when the sprite is drawn, and to 0 if that 
 // doesn't happen.
 void Chip8::ocD000(unsigned short opcode) {
-	unsigned char coord_x = V[X(opcode)];
-	unsigned char coord_y = V[Y(opcode)];
+	int coord_x = V[X(opcode)];
+	int coord_y = V[Y(opcode)];
 	unsigned char sprite_height = opcode & 0x000F;
 	unsigned char sprite_byte;
-	unsigned char xpos, ypos;
+	int xpos, ypos;
 	int gfx_index;
 
 	// Reset VF
@@ -411,27 +415,36 @@ void Chip8::ocD000(unsigned short opcode) {
 	for (int y=0; y<sprite_height; y++) {
 		sprite_byte = memory[I + y];
 		for (int x=0; x<8; x++) {
-			// When sprite is drawn outside display,
-			// wrap it around!
 			xpos = coord_x + x;
 			ypos = coord_y + y;
 
-//			if (xpos > 64) xpos -= 64;
-//			if (ypos > 32) ypos -= 32;
+			// When sprite is drawn outside display,
+			// wrap it around!
+			// This test is turned of, because of on conflict with the
+			// game BLITZ. Instead now there is a test for a valid
+			// gfx-index value.
+			//
+//			if (xpos > 63)
+//				xpos -= 64;
+//			if (xpos < 0)
+//				xpos += 64;
+//
+//			if (ypos > 31)
+//				ypos -= 32;
+//			if (ypos < 0)
+//				ypos += 32;
 
-			gfx_index = xpos + ypos * 64;
-
-//			gfx_index = (coord_x + x)  +
-//				((coord_y + y) * 64);
+			gfx_index = xpos + (ypos * 64);
 
 			// If sprite pixel is set and gfx pixel is set
 			// then VF is set.
-			if ((sprite_byte & (0x80 >> x)) != 0) {
-				if (gfx[gfx_index] == 1)
-					V[0x0F] = 1;
-				// gfx pixel XOR 1
-				gfx[gfx_index] ^= 1;
-			}
+			if (gfx_index < 2048)
+				if ((sprite_byte & (0x80 >> x)) != 0) {
+					if (gfx[gfx_index] == 1)
+						V[0x0F] = 1;
+					// gfx pixel XOR 1
+					gfx[gfx_index] ^= 1;
+				}
 		}
 	}
 
@@ -507,7 +520,7 @@ void Chip8::ocFX1E(unsigned short opcode) {
 	if (I > 0xFFF)
 		V[0x0F] = 1;
 	else
-		V[0x0f] = 0;
+		V[0x0F] = 0;
 	pc += 2;
 }
 
@@ -539,6 +552,7 @@ void Chip8::ocFX33(unsigned short opcode) {
 void Chip8::ocFX55(unsigned short opcode) {
 	for (int i=0; i<=X(opcode); i++)
 		memory[I + i] = V[i];
+	I += X(opcode) + 1;
 	pc += 2;
 }
 
@@ -549,6 +563,7 @@ void Chip8::ocFX55(unsigned short opcode) {
 void Chip8::ocFX65(unsigned short opcode) {
 	for (int i=0; i<=X(opcode); i++)
 		V[i] = memory[I + i];
+	I += X(opcode) + 1;
 	pc += 2;
 }
 
