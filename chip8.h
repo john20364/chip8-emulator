@@ -77,7 +77,10 @@ class Chip8 {
 		void ocFX55(unsigned short opcode);
 		void ocFX65(unsigned short opcode);
 	public:
-		unsigned char gfx[64*32];	// Graphics 64 x 32 pixels
+//		unsigned char gfx[64*32];	// Graphics 64 x 32 pixels
+		// Extended the gfx-array with an extra row to accept 
+		// a BUG in the game BLITZ Who draw one row to many	
+		unsigned char gfx[64*33];	// Graphics 64 x 33 pixels
 		Chip8();
 		~Chip8();
 		void setKeystate(Uint32 sdl_keycode, unsigned char state);

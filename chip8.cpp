@@ -421,8 +421,8 @@ void Chip8::ocD000(unsigned short opcode) {
 			// When sprite is drawn outside display,
 			// wrap it around!
 			// This test is turned of, because of on conflict with the
-			// game BLITZ. Instead now there is a test for a valid
-			// gfx-index value.
+			// game BLITZ. Instead now there is an extra line added to
+			// the gfx-display
 			//
 //			if (xpos > 63)
 //				xpos -= 64;
@@ -438,13 +438,12 @@ void Chip8::ocD000(unsigned short opcode) {
 
 			// If sprite pixel is set and gfx pixel is set
 			// then VF is set.
-			if (gfx_index < 2048)
-				if ((sprite_byte & (0x80 >> x)) != 0) {
-					if (gfx[gfx_index] == 1)
-						V[0x0F] = 1;
-					// gfx pixel XOR 1
-					gfx[gfx_index] ^= 1;
-				}
+			if ((sprite_byte & (0x80 >> x)) != 0) {
+				if (gfx[gfx_index] == 1)
+					V[0x0F] = 1;
+				// gfx pixel XOR 1
+				gfx[gfx_index] ^= 1;
+			}
 		}
 	}
 
@@ -461,7 +460,7 @@ void Chip8::ocE000(unsigned short opcode) {
 // is pressed.
 void Chip8::ocEX9E(unsigned short opcode) {
 	if (keystate[V[X(opcode)]] != 0)
-		pc += 2;
+			pc += 2;
 	pc += 2;
 }
 
